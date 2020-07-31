@@ -40,4 +40,14 @@ app.put('/tasks/:taskId', (req, res) => {
         })
 })
 
+app.get('/tasks/:taskId', (req, res) => {
+    storage.getTask(req.params.taskId)
+        .then((task) => res.status(200).json(task))
+        .catch((error) => {
+            console.log(error)
+
+            res.status(404).json({ error: 'Couldn\'t find the task.' })
+        })
+})
+
 app.listen(port, () => console.log(`Tasks app listening at http://localhost:${port}`))

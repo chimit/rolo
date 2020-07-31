@@ -45,7 +45,13 @@ function createTask(params) {
 
                     reject(error)
                 } else {
-                    resolve({ uuid: uuid, ...params })
+                    console.log('New drafted task is created.')
+
+                    resolve({
+                        uuid: uuid,
+                        name: params.name,
+                        status: 'drafted',
+                    })
                 }
             })
     })
@@ -61,6 +67,14 @@ function confirmTask(uuid) {
         })
 }
 
+function getTask(uuid) { 
+    return getTaskFromDrafts(uuid)
+        .then(
+            task => task,
+            error => getTaskFromQueue(uuid)
+        )
+}
+
 function getTaskFromDrafts(uuid) {
     return new Promise((resolve, reject) => {
         redisClient.hgetall('task:' + uuid, (error, value) => {
@@ -71,7 +85,31 @@ function getTaskFromDrafts(uuid) {
             } else if (!value) {
                 reject(new Error('Draft not found!'))
             } else {
-                resolve({ uuid, ...value })
+                resolve({
+                    uuid: uuid,
+                    name: value.name,
+                    status: 'drafted',
+                })
+            }
+        })
+    })
+}
+
+function getTaskFromQueue(uuid) {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM tasks WHERE uuid = ?', uuid, (error, results, fields) => {
+            if (error) {
+                console.log('Error getting task from the queue!')
+
+                reject(error)
+            } else if (!results[0]) {
+                reject(new Error('Task not found in the queue!'))
+            } else {
+                resolve({
+                    uuid: results[0].uuid,
+                    name: results[0].name,
+                    status: 'queued',
+                });
             }
         })
     })
@@ -98,7 +136,9 @@ function putTaskIntoQueue(task) {
         let CURRENT_TIMESTAMP = { toSqlString: () => 'CURRENT_TIMESTAMP()' }
 
         connection.query('INSERT INTO tasks SET ?', {
-            ...task,
+            uuid: task.uuid,
+            name: task.name,
+            consumed: 0,
             created_at: CURRENT_TIMESTAMP
         }, (error, results, fields) => {
             if (error) {
@@ -108,7 +148,11 @@ function putTaskIntoQueue(task) {
             } else {
                 console.log('Task is put into the queue.')
 
-                resolve({ id: results.insertId, ...task });
+                resolve({
+                    uuid: task.uuid,
+                    name: task.name,
+                    status: 'queued',
+                });
             }
         })
     })
@@ -117,3 +161,4 @@ function putTaskIntoQueue(task) {
 exports.createUser = createUser
 exports.createTask = createTask
 exports.confirmTask = confirmTask
+exports.getTask = getTask
