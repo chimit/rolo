@@ -1,13 +1,9 @@
+const config = require('./config')
 const { v4: uuidv4 } = require('uuid');
 const mysql = require('mysql')
 const redis = require('redis')
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'rolo_tasks'
-})
+const connection = mysql.createConnection(config.mysql)
 
 const redisClient = redis.createClient()
 
