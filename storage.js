@@ -60,6 +60,34 @@ function createUser(params) {
     })
 }
 
+function getTasks(params) {
+    // @todo Make safer search
+    return new Promise((resolve, reject) => {
+        let query = `SELECT tasks.id, tasks.uuid, tasks.user_id, tasks.name, tasks.consumed
+            FROM tasks, users
+            WHERE tasks.user_id = users.id AND ?`
+
+        connection.query(query, params, (error, results, fields) => {
+            if (error) {
+                console.log('Error getting tasks from the queue!')
+
+                reject(error)
+            } else if (results.length === 0) {
+                reject(new Error('No tasks found for this user in the queue!'))
+            } else {
+                resolve(results.map(task => {
+                    return {
+                        uuid: task.uuid,
+                        user_id: task.user_id,
+                        name: task.name,
+                        status: task.consumed ? 'consumed' : 'queued',
+                    }
+                }))
+            }
+        })
+    })
+}
+
 function createTask(params) {
     return new Promise((resolve, reject) => {
         let uuid = uuidv4()
@@ -78,6 +106,7 @@ function createTask(params) {
 
                     resolve({
                         uuid: uuid,
+                        user_id: params.user_id,
                         name: params.name,
                         status: 'drafted',
                     })
@@ -116,6 +145,7 @@ function getTaskFromDrafts(uuid) {
             } else {
                 resolve({
                     uuid: uuid,
+                    user_id: parseInt(value.user_id),
                     name: value.name,
                     status: 'drafted',
                 })
@@ -136,6 +166,7 @@ function getTaskFromQueue(uuid) {
             } else {
                 resolve({
                     uuid: results[0].uuid,
+                    user_id: results[0].user_id,
                     name: results[0].name,
                     status: 'queued',
                 })
@@ -166,6 +197,7 @@ function putTaskIntoQueue(task) {
 
         connection.query('INSERT INTO tasks SET ?', {
             uuid: task.uuid,
+            user_id: task.user_id,
             name: task.name,
             consumed: 0,
             created_at: CURRENT_TIMESTAMP
@@ -179,6 +211,7 @@ function putTaskIntoQueue(task) {
 
                 resolve({
                     uuid: task.uuid,
+                    user_id: task.user_id,
                     name: task.name,
                     status: 'queued',
                 })
@@ -189,6 +222,7 @@ function putTaskIntoQueue(task) {
 
 exports.authenticate = authenticate
 exports.createUser = createUser
+exports.getTasks = getTasks
 exports.createTask = createTask
 exports.confirmTask = confirmTask
 exports.getTask = getTask
