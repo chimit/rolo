@@ -54,7 +54,7 @@ function createUser(params) {
                     name: params.name,
                     email: params.email,
                     token,
-                });
+                })
             }
         })
     })
@@ -138,7 +138,7 @@ function getTaskFromQueue(uuid) {
                     uuid: results[0].uuid,
                     name: results[0].name,
                     status: 'queued',
-                });
+                })
             }
         })
     })
@@ -181,7 +181,7 @@ function putTaskIntoQueue(task) {
                     uuid: task.uuid,
                     name: task.name,
                     status: 'queued',
-                });
+                })
             }
         })
     })
