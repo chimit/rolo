@@ -21,7 +21,12 @@ function createUser(params) {
             } else {
                 console.log('User is saved.')
 
-                resolve({ id: results.insertId, ...params });
+                resolve({
+                    id: results.insertId,
+                    name: params.name,
+                    email: params.email,
+                    token,
+                });
             }
         })
     })
