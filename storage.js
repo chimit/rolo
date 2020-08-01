@@ -1,5 +1,6 @@
 const config = require('./config')
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto')
+const { v4: uuidv4 } = require('uuid')
 const mysql = require('mysql')
 const redis = require('redis')
 
@@ -11,9 +12,36 @@ redisClient.on('error', function (err) {
     console.log('Error ' + err)
 })
 
+function authenticate(token) {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM users WHERE token = ?', token, (error, results, fields) => {
+            if (error) {
+                console.log('Error getting user!')
+
+                reject(error)
+            } else if (!results[0]) {
+                // Do not throw an error to allow public endpoints
+                resolve()
+            } else {
+                resolve({
+                    id: results[0].id,
+                    name: results[0].name,
+                    email: results[0].email,
+                })
+            }
+        })
+    })
+}
+
 function createUser(params) {
     return new Promise((resolve, reject) => {
-        connection.query('INSERT INTO users SET ?', params, (error, results, fields) => {
+        let token = crypto.randomBytes(32).toString('hex')
+
+        connection.query('INSERT INTO users SET ?', {
+            name: params.name,
+            email: params.email,
+            token
+        }, (error, results, fields) => {
             if (error) {
                 console.log('Error saving user!')
                 
@@ -159,6 +187,7 @@ function putTaskIntoQueue(task) {
     })
 }
 
+exports.authenticate = authenticate
 exports.createUser = createUser
 exports.createTask = createTask
 exports.confirmTask = confirmTask

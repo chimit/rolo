@@ -1,10 +1,14 @@
 const config = require('./config')
+const bearerToken = require('express-bearer-token')
 const express = require('express')
 const storage = require('./storage')
+const auth = require('./auth')
 const app = express()
 const port = config.port
 
 app.use(express.json())
+app.use(bearerToken())
+app.use(auth)
 
 app.post('/users', (req, res) => {
     storage.createUser({
