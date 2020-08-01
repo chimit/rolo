@@ -11,8 +11,8 @@ app.post('/users', (req, res) => {
         name: req.body.name,
         email: req.body.email,
     })
-        .then((user) => res.status(201).json(user))
-        .catch((error) => {
+        .then(user => res.status(201).json(user))
+        .catch(error => {
             console.log(error)
 
             res.status(400).json({ error: 'Couldn\'t save the user.' })
@@ -23,8 +23,8 @@ app.post('/tasks', (req, res) => {
     storage.createTask({
         name: req.body.name,
     })
-        .then((task) => res.status(201).json(task))
-        .catch((error) => {
+        .then(task => res.status(201).json(task))
+        .catch(error => {
             console.log(error)
 
             res.status(400).json({ error: 'Couldn\'t save the task.' })
@@ -33,8 +33,8 @@ app.post('/tasks', (req, res) => {
 
 app.put('/tasks/:taskId', (req, res) => {
     storage.confirmTask(req.params.taskId)
-        .then((task) => res.status(201).json(task))
-        .catch((error) => {
+        .then(task => res.status(201).json(task))
+        .catch(error => {
             console.log(error)
 
             res.status(400).json({ error: 'Couldn\'t update the task.' })
@@ -43,8 +43,8 @@ app.put('/tasks/:taskId', (req, res) => {
 
 app.get('/tasks/:taskId', (req, res) => {
     storage.getTask(req.params.taskId)
-        .then((task) => res.status(200).json(task))
-        .catch((error) => {
+        .then(task => res.status(200).json(task))
+        .catch(error => {
             console.log(error)
 
             res.status(404).json({ error: 'Couldn\'t find the task.' })

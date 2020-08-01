@@ -63,7 +63,7 @@ function confirmTask(uuid) {
         })
 }
 
-function getTask(uuid) { 
+function getTask(uuid) {
     return getTaskFromDrafts(uuid)
         .then(
             task => task,
