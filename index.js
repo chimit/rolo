@@ -1,10 +1,10 @@
-const config = require('./config')
+require('dotenv').config()
 const bearerToken = require('express-bearer-token')
 const express = require('express')
 const storage = require('./storage')
 const auth = require('./auth')
 const app = express()
-const port = config.port
+const port = process.env.PORT
 
 app.use(express.json())
 app.use(bearerToken())

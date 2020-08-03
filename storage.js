@@ -1,12 +1,21 @@
-const config = require('./config')
+require('dotenv').config()
 const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 const mysql = require('mysql')
 const redis = require('redis')
 
-const pool = mysql.createPool(config.mysql)
+const pool = mysql.createPool({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    connectionLimit: process.env.MYSQL_CONNECTION_LIMIT,
+})
 
-const redisClient = redis.createClient(config.redis)
+const redisClient = redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+})
 
 redisClient.on('error', function (err) {
     console.log('Error ' + err)
