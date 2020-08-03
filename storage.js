@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid')
 const mysql = require('mysql')
 const redis = require('redis')
 
-const connection = mysql.createConnection(config.mysql)
+const pool = mysql.createPool(config.mysql)
 
 const redisClient = redis.createClient(config.redis)
 
@@ -14,7 +14,7 @@ redisClient.on('error', function (err) {
 
 function authenticate(token) {
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM users WHERE token = ?', token, (error, results, fields) => {
+        pool.query('SELECT * FROM users WHERE token = ?', token, (error, results, fields) => {
             if (error) {
                 console.log('Error getting user!')
 
@@ -37,7 +37,7 @@ function createUser(params) {
     return new Promise((resolve, reject) => {
         let token = crypto.randomBytes(32).toString('hex')
 
-        connection.query('INSERT INTO users SET ?', {
+        pool.query('INSERT INTO users SET ?', {
             name: params.name,
             email: params.email,
             token
@@ -67,7 +67,7 @@ function getTasks(params) {
             FROM tasks, users
             WHERE tasks.user_id = users.id AND ?`
 
-        connection.query(query, params, (error, results, fields) => {
+        pool.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log('Error getting tasks from the queue!')
 
@@ -156,7 +156,7 @@ function getTaskFromDrafts(uuid) {
 
 function getTaskFromQueue(uuid) {
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM tasks WHERE uuid = ?', uuid, (error, results, fields) => {
+        pool.query('SELECT * FROM tasks WHERE uuid = ?', uuid, (error, results, fields) => {
             if (error) {
                 console.log('Error getting task from the queue!')
 
@@ -195,7 +195,7 @@ function putTaskIntoQueue(task) {
     return new Promise((resolve, reject) => {
         let CURRENT_TIMESTAMP = { toSqlString: () => 'CURRENT_TIMESTAMP()' }
 
-        connection.query('INSERT INTO tasks SET ?', {
+        pool.query('INSERT INTO tasks SET ?', {
             uuid: task.uuid,
             user_id: task.user_id,
             name: task.name,
