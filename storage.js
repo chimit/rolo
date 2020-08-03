@@ -6,7 +6,7 @@ const redis = require('redis')
 
 const connection = mysql.createConnection(config.mysql)
 
-const redisClient = redis.createClient()
+const redisClient = redis.createClient(config.redis)
 
 redisClient.on('error', function (err) {
     console.log('Error ' + err)
